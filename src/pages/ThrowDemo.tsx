@@ -34,7 +34,6 @@ function ThrowDemo() {
         init();
         return () => {
             active = false;
-            stop();
         };
     }, []);
 

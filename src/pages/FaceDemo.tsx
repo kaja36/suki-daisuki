@@ -33,7 +33,6 @@ function FaceDemo() {
 
     return () => {
       active = false;
-      stop();
     };
   }, []);
 

@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import { FilesetResolver, ImageSegmenter } from "@mediapipe/tasks-vision";
-import './App.css'
 
 function SegmentDemo() {
     const [error, setError] = useState<string | null>(null)
