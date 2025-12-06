@@ -25,7 +25,7 @@ function App() {
     const imageSegmenter = await ImageSegmenter.createFromOptions(vision, {
       baseOptions: {
         modelAssetPath:
-          "https://storage.googleapis.com/mediapipe-assets/deeplabv3.tflite",
+          "https://storage.googleapis.com/mediapipe-assets/selfie_multiclass_256x256.tflite"
       },
       outputCategoryMask: true,
       outputConfidenceMasks: false,
