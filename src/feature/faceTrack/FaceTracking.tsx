@@ -1,6 +1,7 @@
 import { FaceLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
-import React, { useEffect, useState } from 'react'
-import { getFaceAngle } from './FaceAngle';
+import React, { useEffect, useRef, useState } from 'react'
+import { getFaceAngle, isShakeFace } from './FaceAngle';
+import type { FaceShakeState } from '../../config/FaceTrackingConf';
 
 export interface Angle {
     pitch: number; // 上下
@@ -8,9 +9,19 @@ export interface Angle {
     roll: number;  // 回転
 }
 
-export const FaceTracking = () =>  {
+
+export const FaceTracking = () => {
     const faceLandmarkerRef = React.useRef<FaceLandmarker | null>(null);
     const [AngleLog, setAngleLog] = useState<Angle | null>(null);
+    const [shakeCount, setShakeCount] = useState<number>(0);
+
+    // 状態管理の初期化
+    const faceShakeStateRef = useRef<FaceShakeState>({
+        baseYaw: null,       // 基準となる角度（キャリブレーション用）
+        lastZone: "CENTER",  // 前回の位置 (LEFT, CENTER, RIGHT)
+        crossCount: 0,       // 中心をまたいだ回数
+        lastCrossTime: 0     // 最後にまたいだ時間
+    });
 
     // MediaPipe初期化
     useEffect(() => {
@@ -44,10 +55,11 @@ export const FaceTracking = () =>  {
         if (videoRef.current.videoWidth > 0) {
             const startTimeMs = performance.now();
             const result = faceLandmarkerRef.current.detectForVideo(videoRef.current, startTimeMs);
-            console.log(result);
             if (result.facialTransformationMatrixes.length > 0) {
-                const angle: Angle | null = getFaceAngle(result.facialTransformationMatrixes[0].data);
-                setAngleLog(angle);
+                const isShaking = isShakeFace(result.facialTransformationMatrixes[0].data, faceShakeStateRef);
+                if (isShaking) {
+                    setShakeCount(prevCount => prevCount + 1);
+                }
             }
         }
         requestAnimationFrame(() => renderLoop(videoRef));
@@ -61,5 +73,5 @@ export const FaceTracking = () =>  {
         }
     }
 
-    return {renderLoop, stop, AngleLog}; // コンポーネントは何も描画しない場合は戻り値が必要
+    return { renderLoop, stop, AngleLog, shakeCount }; // コンポーネントは何も描画しない場合は戻り値が必要
 }

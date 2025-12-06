@@ -4,7 +4,7 @@ import { FaceTracking } from '../feature/faceTrack/FaceTracking'
 
 function FaceDemo() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const { renderLoop, stop, AngleLog } = FaceTracking();
+  const { renderLoop, stop, AngleLog, shakeCount } = FaceTracking();
 
   // カメラとトラッキングの初期化
   useEffect(() => {
@@ -49,7 +49,8 @@ function FaceDemo() {
               width: '640px',
               height: '480px',
               border: '2px solid #ccc',
-              borderRadius: '8px'
+              borderRadius: '8px',
+              transform: 'scaleX(-1)'
             }}
           />
         </div>
@@ -77,6 +78,8 @@ function FaceDemo() {
           )}
         </div>
       </div>
+      <h2>顔を振った回数</h2>
+        { shakeCount ? <div>顔を振った回数: {shakeCount} 回</div> : null }
     </div>
   )
 }
