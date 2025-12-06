@@ -1,7 +1,7 @@
 import React from 'react';
 
 /*
-  旧実装（履歴用にコメントアウト）
+  旧実装（削除予定）
 
   import React from 'react'
 

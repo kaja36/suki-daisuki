@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { startStream, stopStream } from '../hooks/Camera'
-import { FaceTracking } from '../feature/faceTrack/FaceTracking'
+import { FaceTracking } from '../features/faceTrack/FaceTracking'
 
 function FaceDemo() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -33,7 +33,6 @@ function FaceDemo() {
 
     return () => {
       active = false;
-      stopStream(videoRef);
       stop();
     };
   }, []);
