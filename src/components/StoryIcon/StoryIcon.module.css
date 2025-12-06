@@ -1,0 +1,98 @@
+.iconWrapper {
+  position: relative; 
+  width: 240px;
+  height: 240px;
+  cursor: pointer;
+}
+
+/* ホバー時の動きはラッパー全体にかける */
+.iconWrapper:hover .innerCircle {
+  transform: scale(1.05);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+}
+.iconWrapper:hover .playButton {
+  transform: scale(1.1); 
+}
+
+
+/* 内側の円 */
+.innerCircle {
+  width: 100%;
+  height: 100%;
+  background-color: #E8DCC8; 
+  border-radius: 50%; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 12px;
+  box-sizing: border-box;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  overflow: hidden; 
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* イラスト */
+.illustration {
+  width: 88%; 
+  height: 48%;
+  border-radius: 120px 120px 0 0; 
+  object-fit: cover;
+  object-position: center center;
+  margin-bottom: 0;
+  pointer-events: none;
+  display: block;
+}
+
+/* テキスト */
+.textGroup {
+  font-family: 'Zen Maru Gothic', sans-serif;
+  color: #332211;
+  text-align: center;
+  line-height: 1.3;
+  z-index: 1;
+  height: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; 
+  padding-top: 10px; 
+  box-sizing: border-box;
+}
+
+.mainText {
+  font-size: 22px;
+  font-weight: 700;
+  display: block;
+}
+
+.subText {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* 再生ボタン */
+.playButton {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 50px; 
+  height: 50px;
+  background-color: #FFFFFF;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+  z-index: 2; 
+  transition: transform 0.3s ease;
+}
+
+/* 再生アイコン */
+.playIcon {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 9px 0 9px 16px;
+  border-color: transparent transparent transparent #555555;
+  margin-left: 4px;
+}
