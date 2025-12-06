@@ -14,6 +14,7 @@ export const FaceTracking = () => {
     const faceLandmarkerRef = React.useRef<FaceLandmarker | null>(null);
     const [AngleLog, setAngleLog] = useState<Angle | null>(null);
     const [shakeCount, setShakeCount] = useState<number>(0);
+    const [isReady, setIsReady] = useState<boolean>(false);
 
     // 状態管理の初期化
     const faceShakeStateRef = useRef<FaceShakeState>({
@@ -43,6 +44,7 @@ export const FaceTracking = () => {
                     minTrackingConfidence: 0.5,
                     outputFacialTransformationMatrixes: true,
                 });
+            setIsReady(true);
         };
         init();
     }, []);
@@ -50,13 +52,18 @@ export const FaceTracking = () => {
     // 顔ランドマーク検出と描画ループ
     // 検出ループ
     const renderLoop = (videoRef: React.RefObject<HTMLVideoElement | null>) => {
-        if (!videoRef.current || !faceLandmarkerRef.current) return;
+        if (!videoRef.current || !faceLandmarkerRef.current) {
+            if (!isReady) requestAnimationFrame(() => renderLoop(videoRef));
+            return;
+        }
 
         if (videoRef.current.videoWidth > 0) {
             const startTimeMs = performance.now();
             const result = faceLandmarkerRef.current.detectForVideo(videoRef.current, startTimeMs);
             if (result.facialTransformationMatrixes.length > 0) {
-                const isShaking = isShakeFace(result.facialTransformationMatrixes[0].data, faceShakeStateRef);
+                const angle = getFaceAngle(result.facialTransformationMatrixes[0].data)
+                setAngleLog(angle);
+                const isShaking = isShakeFace(angle!.yaw, faceShakeStateRef);
                 if (isShaking) {
                     setShakeCount(prevCount => prevCount + 1);
                 }

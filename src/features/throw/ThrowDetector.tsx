@@ -1,10 +1,11 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FilesetResolver, PoseLandmarker } from "@mediapipe/tasks-vision";
 import { useThrowLogic } from "./useThrowLogic";
 
 function ThrowDetector() {
   const poseLandmarkerRef = useRef<PoseLandmarker | null>(null);
   const { isThrown, checkThrow } = useThrowLogic();
+  const [isReady, setIsReady] = useState<boolean>(false);
 
   // MediaPipe初期化
   useEffect(() => {
@@ -20,13 +21,17 @@ function ThrowDetector() {
         runningMode: "VIDEO",
         numPoses: 1
       });
+      setIsReady(true);
     };
     init();
   }, []);
 
   // 検出ループ
   const renderLoop = (videoRef: React.RefObject<HTMLVideoElement | null>) => {
-    if (!videoRef.current || !poseLandmarkerRef.current) return;
+    if (!videoRef.current || !poseLandmarkerRef.current) {
+            if (!isReady) requestAnimationFrame(() => renderLoop(videoRef));
+            return;
+        } 
 
     if (videoRef.current.videoWidth > 0) {
       const startTimeMs = performance.now();

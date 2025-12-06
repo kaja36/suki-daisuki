@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
-import { startStream } from '../hooks/Camera'
-import { FaceTracking } from '../features/faceTrack/FaceTracking'
+import { startStream } from '../../hooks/Camera'
+import { FaceTracking } from '../../features/faceTrack/FaceTracking'
+import { CAMERA_CONF } from '../../config/CameraConf';
 
 function FaceDemo() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -13,8 +14,8 @@ function FaceDemo() {
     const init = async () => {
       // カメラストリームを開始
       const stream = await startStream({
-        width: 640,
-        height: 480,
+        width: CAMERA_CONF.width,
+        height: CAMERA_CONF.height,
         videoRef
       });
 

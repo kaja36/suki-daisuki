@@ -41,26 +41,25 @@ export const getFacePosition = (matrixData: number[]) => {
 }
 
 
-export const isShakeFace = (matrix: number[], stateRef: React.RefObject<FaceShakeState>) => {
-    const rawAngles = getFaceAngle(matrix);
-    if (!rawAngles) {
+export const isShakeFace = (yaw: number, stateRef: React.RefObject<FaceShakeState>) => {
+    if (!yaw) {
         stateRef.current.baseYaw = null;
         return false;
     }
 
     // 1. 【初期化】 まだ基準がないなら今の角度を入れる
     if (stateRef.current.baseYaw === null) {
-        stateRef.current.baseYaw = rawAngles.yaw;
+        stateRef.current.baseYaw = yaw;
         return;
     }
 
     // 2. 【ここが重要！】 基準点を、現在の角度に少しだけ近づける（ドリフト補正）
     // これにより、baseYaw は「数秒前の平均的な顔の向き」になり続けます
     const currentBase = stateRef.current.baseYaw;
-    stateRef.current.baseYaw = (currentBase * (1 - CONFIG.DRIFT_FACTOR)) + (rawAngles.yaw * CONFIG.DRIFT_FACTOR);
+    stateRef.current.baseYaw = (currentBase * (1 - CONFIG.DRIFT_FACTOR)) + (yaw * CONFIG.DRIFT_FACTOR);
 
     // 3. 相対角度の計算
-    const relativeYaw = rawAngles.yaw - stateRef.current.baseYaw;
+    const relativeYaw = yaw - stateRef.current.baseYaw;
 
     let currentZone: "LEFT" | "CENTER" | "RIGHT" = "CENTER";
     if (relativeYaw > CONFIG.THRESHOLD) currentZone = "LEFT";

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
-import { startStream } from '../hooks/Camera';
-import { CAMERA_CONF } from '../config/CameraConf';
-import ThrowDetector from "../features/throw/ThrowDetector"
+import { startStream } from '../../hooks/Camera';
+import { CAMERA_CONF } from '../../config/CameraConf';
+import ThrowDetector from "../../features/throw/ThrowDetector"
 
 function ThrowDemo() {
     const videoRef = React.useRef<HTMLVideoElement>(null);
