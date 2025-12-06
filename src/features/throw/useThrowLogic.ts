@@ -31,6 +31,7 @@ export const useThrowLogic = () => {
       // 移動距離が閾値を超えたらポイ捨てと判定
       if (distance > THROW_THRESHOLD) {
         setIsThrown(true);
+        console.log("Throw detected with distance:", distance);
         setTimeout(() => setIsThrown(false), 3000);
       }
     }

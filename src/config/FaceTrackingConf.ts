@@ -3,6 +3,7 @@ export const CONFIG = {
   THRESHOLD: 4, // 検知する角度
   TIMEOUT: 800, // 連続検知の猶予時間
   REQUIRED_CROSS: 2, // 往復回数
+  REQUIRED_SHAKE_COUNT: 3, // 何回でイベントが発火するか
 
   // ★追加: 追従スピード (0.0 〜 1.0)
   // 小さいほどゆっくり追従（補正が強力）、大きいほど敏感

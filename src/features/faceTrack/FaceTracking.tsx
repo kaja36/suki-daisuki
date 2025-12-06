@@ -1,7 +1,7 @@
 import { FaceLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
 import React, { useEffect, useRef, useState } from 'react'
 import { getFaceAngle, isShakeFace } from './FaceAngle';
-import type { FaceShakeState } from '../../config/FaceTrackingConf';
+import { CONFIG, type FaceShakeState } from '../../config/FaceTrackingConf';
 
 export interface Angle {
     pitch: number; // 上下
@@ -15,6 +15,8 @@ export const FaceTracking = () => {
     const [AngleLog, setAngleLog] = useState<Angle | null>(null);
     const [shakeCount, setShakeCount] = useState<number>(0);
     const [isReady, setIsReady] = useState<boolean>(false);
+    const activeRef = useRef<boolean>(false); // ループの稼働状態
+    const rafIdRef = useRef<number | null>(null); // rAF管理
 
     // 状態管理の初期化
     const faceShakeStateRef = useRef<FaceShakeState>({
@@ -25,35 +27,38 @@ export const FaceTracking = () => {
     });
 
     // MediaPipe初期化
+
+
     useEffect(() => {
         const init = async () => {
-            const vision = await FilesetResolver.forVisionTasks(
-                "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
-            );
-            faceLandmarkerRef.current = await FaceLandmarker.createFromOptions(
-                vision,
-                {
-                    baseOptions: {
-                        modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task",
-                        delegate: "GPU"
-                    },
-                    runningMode: "VIDEO",
-                    numFaces: 1,
-                    minFaceDetectionConfidence: 0.5,
-                    minFacePresenceConfidence: 0.5,
-                    minTrackingConfidence: 0.5,
-                    outputFacialTransformationMatrixes: true,
-                });
-            setIsReady(true);
-        };
+        const vision = await FilesetResolver.forVisionTasks(
+            "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+        );
+        faceLandmarkerRef.current = await FaceLandmarker.createFromOptions(
+            vision,
+            {
+                baseOptions: {
+                    modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task",
+                    delegate: "GPU"
+                },
+                runningMode: "VIDEO",
+                numFaces: 1,
+                minFaceDetectionConfidence: 0.5,
+                minFacePresenceConfidence: 0.5,
+                minTrackingConfidence: 0.5,
+                outputFacialTransformationMatrixes: true,
+            });
+        setIsReady(true);
+    };
         init();
     }, []);
 
     // 顔ランドマーク検出と描画ループ
     // 検出ループ
-    const renderLoop = (videoRef: React.RefObject<HTMLVideoElement | null>) => {
-        if (!videoRef.current || !faceLandmarkerRef.current) {
-            if (!isReady) requestAnimationFrame(() => renderLoop(videoRef));
+    const renderLoop = (videoRef: React.RefObject<HTMLVideoElement | null>, canvasRef?: React.RefObject<HTMLCanvasElement | null>, observeAction?: () => void) => {
+        activeRef.current = true;
+        if (!videoRef.current || !faceLandmarkerRef.current || !isReady) {
+            rafIdRef.current = requestAnimationFrame(() => renderLoop(videoRef, canvasRef, observeAction));
             return;
         }
 
@@ -65,20 +70,41 @@ export const FaceTracking = () => {
                 setAngleLog(angle);
                 const isShaking = isShakeFace(angle!.yaw, faceShakeStateRef);
                 if (isShaking) {
-                    setShakeCount(prevCount => prevCount + 1);
+                    setShakeCount(prevCount => {
+                        const next = prevCount + 1;
+                        console.log("Shaking detected", next);
+                        if (observeAction && next >= CONFIG.REQUIRED_SHAKE_COUNT) {
+                            stop(observeAction);
+                        }
+                        return next;
+                    });
                 }
             }
         }
-        requestAnimationFrame(() => renderLoop(videoRef));
+        rafIdRef.current = requestAnimationFrame(() => renderLoop(videoRef, canvasRef, observeAction));
     };
 
     // 停止
-    const stop = () => {
+    const stop = (observeAction?: () => void) => {
+        activeRef.current = false;
+        setShakeCount(0);
+        if (rafIdRef.current !== null) {
+            cancelAnimationFrame(rafIdRef.current);
+            rafIdRef.current = null;
+        }
+        if (observeAction) {
+            observeAction();
+        }
+    }
+
+    // 完全解放（最終的に不要になった時のみ呼ぶ）
+    const dispose = () => {
         if (faceLandmarkerRef.current) {
             faceLandmarkerRef.current.close();
             faceLandmarkerRef.current = null;
         }
+        setIsReady(false);
     }
 
-    return { renderLoop, stop, AngleLog, shakeCount }; // コンポーネントは何も描画しない場合は戻り値が必要
+    return { renderLoop, stop, dispose, AngleLog, shakeCount }; // コンポーネントは何も描画しない場合は戻り値が必要
 }

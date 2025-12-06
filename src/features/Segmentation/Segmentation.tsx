@@ -30,10 +30,11 @@ function Segmentation() {
   // 検出ループ
   const renderLoop = (
     videoRef: React.RefObject<HTMLVideoElement | null>,
-    canvasRef: React.RefObject<HTMLCanvasElement | null>
+    canvasRef: React.RefObject<HTMLCanvasElement | null>,
+    observeAction?: () => void
   ) => {
     if (!videoRef.current || !imageSegmenterRef.current || !canvasRef.current) {
-      if (!isReady) requestAnimationFrame(() => renderLoop(videoRef, canvasRef));
+      if (!isReady) requestAnimationFrame(() => renderLoop(videoRef, canvasRef, observeAction));
       return;
     }
 
@@ -60,7 +61,7 @@ function Segmentation() {
       }
     }
 
-    requestAnimationFrame(() => renderLoop(videoRef, canvasRef));
+    requestAnimationFrame(() => renderLoop(videoRef, canvasRef, observeAction));
   };
 
   // 停止

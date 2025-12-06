@@ -27,9 +27,9 @@ function ThrowDetector() {
   }, []);
 
   // 検出ループ
-  const renderLoop = (videoRef: React.RefObject<HTMLVideoElement | null>) => {
+  const renderLoop = (videoRef: React.RefObject<HTMLVideoElement | null>, canvasRef?: React.RefObject<HTMLCanvasElement | null>, observeAction?: () => void) => {
     if (!videoRef.current || !poseLandmarkerRef.current) {
-            if (!isReady) requestAnimationFrame(() => renderLoop(videoRef));
+            if (!isReady) requestAnimationFrame(() => renderLoop(videoRef, canvasRef, observeAction));
             return;
         } 
 
@@ -40,16 +40,22 @@ function ThrowDetector() {
       // 骨格が見つかったら判定ロジックへ渡す
       if (result.landmarks && result.landmarks.length > 0) {
         checkThrow(result.landmarks[0]);
+        if(isThrown && observeAction) {
+          stop(observeAction);
+        }
       }
     }
-    requestAnimationFrame(() => renderLoop(videoRef));
+    requestAnimationFrame(() => renderLoop(videoRef, canvasRef, observeAction));
   };
 
   // 停止
-  const stop = () => {
+  const stop = (observeAction?: () => void) => {
     if (poseLandmarkerRef.current) {
       poseLandmarkerRef.current.close();
       poseLandmarkerRef.current = null;
+    }
+    if (observeAction) {
+      observeAction();
     }
   };
 
