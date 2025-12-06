@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { startStream, stopStream } from '../hooks/Camera'
+import { startStream } from '../hooks/Camera'
 import { FaceTracking } from '../features/faceTrack/FaceTracking'
 
 function FaceDemo() {
