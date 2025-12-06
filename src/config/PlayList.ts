@@ -19,7 +19,7 @@ export const PLAY_LIST: PlayListDict = {
         url: "/movie/海の中.mp4",
         muted: true,
         isInteractive: true, // インタラクティブならtrueに
-        callFunction: "FaceTracking", // 顔追跡機能を呼び出す
+        callFunction: "ThrowDetector", // 顔追跡機能を呼び出す
       },
       {
         url: "/movie/海岸.mp4",
