@@ -10,6 +10,11 @@ export type PlayListDict = Record<string, { sequence: PlayListItem[] }>;
 export const PLAY_LIST: PlayListDict = {
   "たけるくんのお話": {
     sequence: [
+        {
+        url: "/assets/movie/sea/trash_toys.mp4",
+        muted: false,
+        isInteractive: false,
+      },
       {
         url: "/assets/movie/sea/coast.mp4",
         muted: false,
@@ -22,12 +27,12 @@ export const PLAY_LIST: PlayListDict = {
         isInteractive: false,
       },
       {
-        url: "/assets/movie/sea/approaching_plankton.mp4",
+        url: "/assets/movie/sea/come_plankton.mp4",
         muted: false,
         isInteractive: false,
       },
-      {
-        url: "/assets/movie/sea/come_plankton.mp4",
+    {
+        url: "/assets/movie/sea/approaching_plankton.mp4",
         muted: false,
         isInteractive: false,
       },

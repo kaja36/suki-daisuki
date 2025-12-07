@@ -15,7 +15,6 @@ function VideoManager({ movieTitle }: VideoManagerProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const startedRef = useRef<boolean>(false); // renderLoop二重起動防止
     const advancingRef = useRef<boolean>(false); // シーン遷移の二重発火防止
-    const actionMessage = useState<string | null>(null);
     // FaceTracking() を複数回呼ぶと別インスタンスになり、shakeCount が伝播しないため1回だけに統一
     const faceTracking = FaceTracking();
     const FaceTrackingRenderLoop = faceTracking.renderLoop;

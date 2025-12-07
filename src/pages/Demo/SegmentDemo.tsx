@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { CAMERA_CONF } from "../../config/CameraConf";
 import { startStream } from "../../hooks/Camera";
 import Segmentation from "../../features/Segmentation/Segmentation";
