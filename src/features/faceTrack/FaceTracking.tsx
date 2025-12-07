@@ -55,14 +55,7 @@ export const FaceTracking = () => {
 
     // 顔ランドマーク検出と描画ループ
     // 検出ループ
-    // 変更理由: UI更新（shakeごとの視覚効果）とシーン遷移（閾値到達時）を分離するため、
-    // onShake コールバックを追加。単一責任の原則に従い、FaceTracking は検出イベントを通知するだけに留める。
-    const renderLoop = (
-        videoRef: React.RefObject<HTMLVideoElement | null>,
-        canvasRef?: React.RefObject<HTMLCanvasElement | null>,
-        observeAction?: () => void, // 閾値到達時のみ使用
-        onShake?: (count: number) => void // shake増加の都度通知（UI側が利用）
-    ) => {
+    const renderLoop = (videoRef: React.RefObject<HTMLVideoElement | null>, canvasRef?: React.RefObject<HTMLCanvasElement | null>, observeAction?: () => void) => {
         activeRef.current = true;
         if (!videoRef.current || !faceLandmarkerRef.current || !isReady) {
             rafIdRef.current = requestAnimationFrame(() => renderLoop(videoRef, canvasRef, observeAction));
@@ -81,8 +74,6 @@ export const FaceTracking = () => {
                     setShakeCount(prevCount => {
                         const next = prevCount + 1;
                         console.log("Shaking detected", next);
-                        // 追加: 増加を即時通知（UI側のザワザワ更新などに使用）
-                        if (onShake) onShake(next);
                         if (observeAction && next >= CONFIG.REQUIRED_SHAKE_COUNT) {
                             stop(observeAction);
                         }
@@ -91,7 +82,7 @@ export const FaceTracking = () => {
                 }
             }
         }
-        rafIdRef.current = requestAnimationFrame(() => renderLoop(videoRef, canvasRef, observeAction, onShake));
+        rafIdRef.current = requestAnimationFrame(() => renderLoop(videoRef, canvasRef, observeAction));
     };
 
     // 停止
