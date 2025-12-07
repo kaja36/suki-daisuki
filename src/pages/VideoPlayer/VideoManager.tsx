@@ -12,110 +12,115 @@ type VideoManagerProps = { movieTitle: string };
 function VideoManager({ movieTitle }: VideoManagerProps) {
     const navigate = useNavigate();
     const videoRef = useRef<HTMLVideoElement>(null);
-        const canvasRef = useRef<HTMLCanvasElement>(null);
-        const startedRef = useRef<boolean>(false); // renderLoop二重起動防止
-        const advancingRef = useRef<boolean>(false); // シーン遷移の二重発火防止
-            // FaceTracking() を複数回呼ぶと別インスタンスになり、shakeCount が伝播しないため1回だけに統一
-            const faceTracking = FaceTracking();
-            const FaceTrackingRenderLoop = faceTracking.renderLoop;
-            const shakeCount = faceTracking.shakeCount;
-            const SegmentationRenderLoop = Segmentation().renderLoop;
-            const ThrowDetectorRenderLoop = ThrowDetector().renderLoop;
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const startedRef = useRef<boolean>(false); // renderLoop二重起動防止
+    const advancingRef = useRef<boolean>(false); // シーン遷移の二重発火防止
+    const actionMessage = useState<string | null>(null);
+    // FaceTracking() を複数回呼ぶと別インスタンスになり、shakeCount が伝播しないため1回だけに統一
+    const faceTracking = FaceTracking();
+    const FaceTrackingRenderLoop = faceTracking.renderLoop;
+    const shakeCount = faceTracking.shakeCount;
+    const SegmentationRenderLoop = Segmentation().renderLoop;
+    const ThrowDetectorRenderLoop = ThrowDetector().renderLoop;
 
-        const sceneList = useMemo(() => {
-            const sequence = getSequence(movieTitle);
-            console.log(`Loaded sequence for title "${movieTitle}":`, sequence);
-            return sequence;
-        }, [movieTitle]);
+    const sceneList = useMemo(() => {
+        const sequence = getSequence(movieTitle);
+        console.log(`Loaded sequence for title "${movieTitle}":`, sequence);
+        return sequence;
+    }, [movieTitle]);
 
-        const [currentIndex, setCurrentIndex] = useState<number>(0);
-        const [warningMessage, setWarningMessage] = useState<string | null>(null);
-        const [previewVisible, setPreviewVisible] = useState<boolean>(false);
+    const [currentIndex, setCurrentIndex] = useState<number>(0);
+    const [warningMessage, setWarningMessage] = useState<string | null>(null);
+    const [previewVisible, setPreviewVisible] = useState<boolean>(false);
 
-        // インデックス変更時に遷移ガード解除
-        useEffect(() => {
-            advancingRef.current = false;
-        }, [currentIndex]);
+    // インデックス変更時に遷移ガード解除
+    useEffect(() => {
+        advancingRef.current = false;
+    }, [currentIndex]);
 
-        const [prevTitle, setPrevTitle] = useState(movieTitle);
-        if (movieTitle !== prevTitle) {
-            setPrevTitle(movieTitle);
-            setCurrentIndex(0);
+    const [prevTitle, setPrevTitle] = useState(movieTitle);
+    if (movieTitle !== prevTitle) {
+        setPrevTitle(movieTitle);
+        setCurrentIndex(0);
+    }
+
+    const existUrl = (): string => {
+        const url = sceneList ? (sceneList.length > currentIndex ? sceneList[currentIndex].url : '') : '';
+        if (!url) {
+            console.warn('No URL found for the current scene.');
+            setWarningMessage('No URL found for the current scene.');
+            return '';
         }
+        return url;
+    };
 
-        const existUrl = (): string => {
-            const url = sceneList ? (sceneList.length > currentIndex ? sceneList[currentIndex].url : '') : '';
-            if (!url) {
-                console.warn('No URL found for the current scene.');
-                setWarningMessage('No URL found for the current scene.');
-                return '';
+    const prepareDetecter = async (callFunction: "FaceTracking" | "ThrowDetector" | "Segmentation" | undefined) => {
+        if (!callFunction) return;
+        if (startedRef.current) return; // すでに開始済みなら再起動しない
+
+        await startStream({ width: CAMERA_CONF.width, height: CAMERA_CONF.height, videoRef });
+        const el = videoRef.current;
+        console.log('Video element after startStream:', el);
+        if (!el) return;
+        if (!el.srcObject) {
+            console.warn('Camera srcObject is missing after startStream');
+            return;
+        }
+        setPreviewVisible(true);
+
+        el.onloadedmetadata = async () => {
+            const v = videoRef.current;
+            if (!v) return;
+            try { await v.play(); } catch (e) { console.warn('video play failed', e); }
+
+            let renderLoop: ((videoRef: React.RefObject<HTMLVideoElement | null>, canvasRef: React.RefObject<HTMLCanvasElement | null>, observeAction?: () => void) => void) | undefined;
+            if (callFunction === "FaceTracking") {
+                renderLoop = FaceTrackingRenderLoop;
+            } else if (callFunction === "ThrowDetector") {
+                renderLoop = ThrowDetectorRenderLoop;
+            } else if (callFunction === "Segmentation") {
+                renderLoop = SegmentationRenderLoop;
             }
-            return url;
-        };
 
-        const prepareDetecter = async (callFunction: "FaceTracking" | "ThrowDetector" | "Segmentation" | undefined) => {
-            if (!callFunction) return;
-            if (startedRef.current) return; // すでに開始済みなら再起動しない
-
-            await startStream({ width: CAMERA_CONF.width, height: CAMERA_CONF.height, videoRef });
-            const el = videoRef.current;
-            console.log('Video element after startStream:', el);
-            if (!el) return;
-            if (!el.srcObject) {
-                console.warn('Camera srcObject is missing after startStream');
+            const observeAction = () => setNextScene();
+            if (!renderLoop) {
+                console.warn(`No renderLoop resolved for callFunction: ${callFunction}`);
                 return;
             }
-            setPreviewVisible(true);
-
-            el.onloadedmetadata = async () => {
-                const v = videoRef.current;
-                if (!v) return;
-                try { await v.play(); } catch (e) { console.warn('video play failed', e); }
-
-                let renderLoop: ((videoRef: React.RefObject<HTMLVideoElement | null>, canvasRef: React.RefObject<HTMLCanvasElement | null>, observeAction?: () => void) => void) | undefined;
-                if (callFunction === "FaceTracking") {
-                    renderLoop = FaceTrackingRenderLoop;
-                } else if (callFunction === "ThrowDetector") {
-                    renderLoop = ThrowDetectorRenderLoop;
-                } else if (callFunction === "Segmentation") {
-                    renderLoop = SegmentationRenderLoop;
-                }
-
-                const observeAction = () => setNextScene();
-                if (!renderLoop) {
-                    console.warn(`No renderLoop resolved for callFunction: ${callFunction}`);
-                    return;
-                }
-                if (!startedRef.current) {
-                    console.log(`Starting renderLoop for ${callFunction}`);
-                    startedRef.current = true;
-                    renderLoop(videoRef, canvasRef, observeAction);
-                }
-            };
+            if (!startedRef.current) {
+                console.log(`Starting renderLoop for ${callFunction}`);
+                startedRef.current = true;
+                renderLoop(videoRef, canvasRef, observeAction);
+            }
         };
+    };
 
-        const setNextScene = () => {
-            if (advancingRef.current) return;
-            advancingRef.current = true;
-            setCurrentIndex((prevIndex) => {
-                const nextIndex = prevIndex + 1;
-                console.log('Moving to next scene', nextIndex);
-                if (sceneList && nextIndex < sceneList.length) {
-                    startedRef.current = false;
-                    if (!sceneList[nextIndex].isInteractive) {
-                        stopStream(videoRef);
-                        setPreviewVisible(false);
-                    }
-                    return nextIndex;
+    const setNextScene = () => {
+        if (advancingRef.current) return;
+        advancingRef.current = true;
+        setCurrentIndex((prevIndex) => {
+            const nextIndex = prevIndex + 1;
+            console.log('Moving to next scene', nextIndex);
+            if (sceneList && nextIndex < sceneList.length) {
+                startedRef.current = false;
+                if (!sceneList[nextIndex].isInteractive) {
+                    stopStream(videoRef);
+                    setPreviewVisible(false);
                 }
-                navigate('/')
-                return prevIndex;
-            });
-        };
+                return nextIndex;
+            }
+            navigate('/')
+            return prevIndex;
+        });
+    };
 
-        return (
+    // シーケンスが空の場合は描画せず早期リターン（単一責任: ルーティングは呼び出し側で制御する想定）
+    if (!sceneList || sceneList.length === 0) return (<></>);
+
+    return (
+        <>
             <div style={{ position: 'relative' }}>
-                {sceneList ? (sceneList[currentIndex].url === "/assets/movie/sea/cg_crossing_voice.mp4"  || sceneList[currentIndex].url === "/assets/movie/sea/cg_crossing_fish.mp4" ?  (
+                {sceneList ? (sceneList[currentIndex].url === "/assets/movie/sea/cg_crossing_voice.mp4" || sceneList[currentIndex].url === "/assets/movie/sea/cg_crossing_fish.mp4" ? (
                     <img
                         src="/assets/prastic/white.png"
                         alt="overlay"
@@ -129,7 +134,7 @@ function VideoManager({ movieTitle }: VideoManagerProps) {
                             top: '50%',
                             transform: (() => {
                                 const amp = 10; // 変位最大(px)
-                                const rotAmp = 5; // 回転最大(deg)
+                                const rotAmp = 20; // 回転最大(deg)
                                 const seed = shakeCount ?? 0;
                                 const rand = (s: number) => {
                                     const x = Math.sin(s * 12.9898) * 43758.5453;
@@ -148,7 +153,7 @@ function VideoManager({ movieTitle }: VideoManagerProps) {
                             zIndex: 3,
                         }}
                     />
-                ) : null ): null}
+                ) : null) : null}
                 {/* プレビュービデオ（カメラ）: 左下に重ねて表示 */}
                 <video
                     ref={videoRef}
@@ -172,7 +177,7 @@ function VideoManager({ movieTitle }: VideoManagerProps) {
                     <video
                         src={existUrl()}
                         controls={false}
-                        autoPlay = {true}
+                        autoPlay={true}
                         playsInline
                         muted={sceneList ? sceneList[currentIndex].muted : true}
                         loop={sceneList ? sceneList[currentIndex].isInteractive : false}
@@ -185,7 +190,17 @@ function VideoManager({ movieTitle }: VideoManagerProps) {
                     />
                 )}
             </div>
-        );
-    }
+            <p style={{ color: 'black', textAlign: 'center', marginTop: '10px' }}>
+                {
+                    sceneList[currentIndex].callFunction === 'FaceTracking'
+                        ? "首を振ってゴミを落としましょう"
+                        : sceneList[currentIndex].callFunction === 'ThrowDetector'
+                            ? "カメラに向かって投げる動作をしてください"
+                            : ""
+                }
+            </p>
+        </>
+    );
+}
 
-    export default VideoManager;
+export default VideoManager;
