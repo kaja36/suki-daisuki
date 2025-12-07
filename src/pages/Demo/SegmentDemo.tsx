@@ -6,7 +6,7 @@ import Segmentation from "../../features/Segmentation/Segmentation";
 function SegmentDemo() {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const { renderLoop, stop } = Segmentation();
+    const { renderLoop } = Segmentation();
 
     // カメラとトラッキングの初期化
     useEffect(() => {

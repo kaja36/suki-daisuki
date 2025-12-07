@@ -5,7 +5,7 @@ import { CAMERA_CONF } from '../../config/CameraConf';
 
 function FaceDemo() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const { renderLoop, stop, AngleLog, shakeCount } = FaceTracking();
+  const { renderLoop, AngleLog, shakeCount } = FaceTracking();
 
   // カメラとトラッキングの初期化
   useEffect(() => {
@@ -26,6 +26,7 @@ function FaceDemo() {
         if (videoRef.current) {
           videoRef.current.play();
           renderLoop(videoRef);
+          console.log('DEMO: FaceTracking renderLoop started');
         }
       };
     };

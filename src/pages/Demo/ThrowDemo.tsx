@@ -6,7 +6,7 @@ import ThrowDetector from "../../features/throw/ThrowDetector"
 function ThrowDemo() {
     const videoRef = React.useRef<HTMLVideoElement>(null);
     const [isCameraReady, setIsCameraReady] = React.useState(false);
-    const { renderLoop, stop, isThrown } = ThrowDetector();
+    const { renderLoop, isThrown } = ThrowDetector();
 
     // カメラとトラッキングの初期化
     useEffect(() => {

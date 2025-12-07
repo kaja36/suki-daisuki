@@ -45,7 +45,11 @@ function ThrowDetector() {
   ) => {
     observeActionRef.current = observeAction;
     activeRef.current = true;
-    if (!videoRef.current || !poseLandmarkerRef.current || !isReady) {
+    // 変更理由: isReady は状態反映タイミングにより古い値になる可能性がある。
+    // 実際に使用可能かどうかは poseLandmarkerRef.current の有無で判定するのが安全。
+    // 単一責任: UI向けフラグとして isReady は維持するが、ループの可否は参照の存在で判断する。
+    if (!videoRef.current || !poseLandmarkerRef.current) {
+      console.log("Waiting for video or poseLandmarker.", { hasVideo: !!videoRef.current, hasPose: !!poseLandmarkerRef.current, isReady });
       rafIdRef.current = requestAnimationFrame(() => renderLoop(videoRef, canvasRef, observeAction));
       return;
     }
@@ -53,7 +57,7 @@ function ThrowDetector() {
     if (videoRef.current.videoWidth > 0) {
       const startTimeMs = performance.now();
       const result = poseLandmarkerRef.current.detectForVideo(videoRef.current, startTimeMs);
-
+      // console.log("PoseLandmarker result:", result);
       // 骨格が見つかったら判定ロジックへ渡す
       if (result.landmarks && result.landmarks.length > 0) {
         checkThrow(result.landmarks[0]);

@@ -24,10 +24,7 @@ const VideoPlayer: React.FC = () => {
       
       <div className="placeholder-video">
         {/* ここに <video> タグやMediaPipeの結果Canvasが入る */}
-        <VideoManager movieTitle={"title"} />
-        <p style={{color: content.color}}>
-          ここに {content.title} の映像が流れる予定<br />
-        </p>
+        <VideoManager movieTitle={content.title} />
       </div>
 
       <button className="back-button" onClick={() => navigate('/')}>
