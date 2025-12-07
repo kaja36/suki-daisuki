@@ -27,6 +27,11 @@ export const PLAY_LIST: PlayListDict = {
         isInteractive: false,
       },
       {
+        url: "/assets/movie/sea/sea_of_garbage.mp4",
+        muted: false,
+        isInteractive: false,
+      },
+      {
         url: "/assets/movie/sea/come_plankton.mp4",
         muted: false,
         isInteractive: false,
