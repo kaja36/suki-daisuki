@@ -134,7 +134,7 @@ function VideoManager({ movieTitle }: VideoManagerProps) {
                             top: '50%',
                             transform: (() => {
                                 const amp = 10; // 変位最大(px)
-                                const rotAmp = 5; // 回転最大(deg)
+                                const rotAmp = 20; // 回転最大(deg)
                                 const seed = shakeCount ?? 0;
                                 const rand = (s: number) => {
                                     const x = Math.sin(s * 12.9898) * 43758.5453;
