@@ -7,7 +7,7 @@ Blenderによって表現されたストーリを体験者の動作を検知す�
 <img width="300" height="300" alt="face-shake-motion" src="https://github.com/user-attachments/assets/21fb3fc0-7aa9-4510-9b37-207a091fba09" />
 
 
-## 全体構造
+## 構造
 - public: 素材
 - src
   - ルート: `App.tsx`, `main.tsx`, 共通スタイル `App.css`, `index.css`
