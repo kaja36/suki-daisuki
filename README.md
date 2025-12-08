@@ -6,6 +6,9 @@ Blenderによって表現されたストーリを体験者の動作を検知す�
 <img width="300" height="300" alt="throw-motion" src="https://github.com/user-attachments/assets/37a36ab4-6be2-49f0-9c8f-b0b353cd7d7a" />
 <img width="300" height="300" alt="face-shake-motion" src="https://github.com/user-attachments/assets/21fb3fc0-7aa9-4510-9b37-207a091fba09" />
 
+## 技術スタック
+![](https://skillicons.dev/icons?i=vite,blender,ae,capcut,imovie,garageband&theme=light)
+
 
 ## 構造
 - public: 素材
